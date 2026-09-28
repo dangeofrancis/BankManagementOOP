@@ -85,7 +85,6 @@ public class main{
 		}
 
 		public static void mainmenu(Scanner sc,HashMap<String,String> userval,String usrname){
-				int choice1 = sc.nextInt();
 				while(true){ 
 						System.out.println("#################");
 						System.out.println("### Main Menu ###");
