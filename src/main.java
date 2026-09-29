@@ -1,11 +1,9 @@
 import java.util.Scanner;
 import java.math.BigDecimal;
-import java.util.HashMap;
 public class main{
 		public static void main(String[]args){
 				Scanner sc = new Scanner(System.in);
-				HashMap<String,Account> usrval = new HashMap<>();
-
+				BankManager bank = new BankManager();
 				while(true){
 				System.out.println("-------------------");
 				System.out.println("Banking Application");
@@ -20,11 +18,11 @@ public class main{
 				}
 				switch(choice){
 						case 1:
-								newacc(sc,usrval);
+								newacc(sc,bank);
 						break;
 
 						case 2:
-								login(sc,usrval);
+								login(sc,bank);
 						break;
 						case 3:
 								System.out.println("Enter adiministrator username");
@@ -33,7 +31,7 @@ public class main{
 								String passwd1 = sc.nextLine();
 								if(usrname.equals("admin") && passwd1.equals("password")){
 										System.out.println("ACCESS GRANTED");
-										adminMenu(sc,usrval);
+										adminMenu(sc,bank);
 								}else{
 										System.out.println("ACCESS  DENIED");
 								}
@@ -46,57 +44,48 @@ public class main{
 				sc.close();
 		}
 
-		public static void newacc(Scanner sc,HashMap<String,Account> usrval){
+		public static void newacc(Scanner sc,BankManager bank){
 				String usrname;
-				String passwd1;
-				String passwd2;
 				System.out.println("Enter your username(A Strong and collection of charecters,larger than 6 characters long.)");
 				usrname = sc.nextLine();
 
 				if(usrname.length()<6){
 						System.out.println("invalid username");
-				}else if(usrval.containsKey(usrname)){
-						System.out.println("username alreadytaken");
-				}else{
-						do{ 
-								System.out.println("username available.\n set password");
-								passwd1 = sc.nextLine();
-								System.out.println("re-enter password");
-								passwd2 = sc.nextLine();
-								if(!passwd1.equals(passwd2)){
-										System.out.println("mismatching passwords, try again.");
+						return;
+				}
+				String passwd1, passwd2;
+						do { System.out.println("Set password:");
+						passwd1 = sc.nextLine();
+					   	System.out.println("Re-enter password:");
+						passwd2 = sc.nextLine();
+					   	if (!passwd1.equals(passwd2)) {
+									System.out.println("Mismatching passwords, try again."); 
 								}
-						}while(!passwd1.equals(passwd2));
-						usrval.put(usrname, new Account(passwd1));
-						System.out.println("password confirmed. user created.");
+						} while (!passwd1.equals(passwd2));
+						if (bank.registerUser(usrname, passwd1)) {
+							System.out.println("Password confirmed. User created."); 
+						}else {
+							System.out.println("Username already taken."); 
 						}
 		}
 
 
-		public static void login(Scanner sc,HashMap<String,Account> usrval){
-				String usrname;
-				String passwd;
-				String passwd1;
-				System.out.println("Enter your username");
-				usrname = sc.nextLine();
-				if(usrname.length()<6){
-						System.out.println("invalid username");
-				}else if(usrval.containsKey(usrname)){
-						System.out.println("Enter password");
-						passwd = sc.nextLine();
-						Account currentAcc = usrval.get(usrname);
-						if (currentAcc.isBlocked()) {
-								System.out.println("Account suspended. Contact Admin.");
-						} else if (currentAcc.getPassword().equals(passwd)) {
-								System.out.println("access granted.");
-								mainmenu(sc, currentAcc);
-						} else {
-								System.out.println("access denied.");
-						}
-				}else{
-						System.out.println("user invalid");
-				}	
-	
+		public static void login(Scanner sc, BankManager bank) {
+				System.out.println("Enter your username:");
+				String usrname = sc.nextLine();
+				System.out.println("Enter your password:");
+				String passwd = sc.nextLine();
+		
+				Account currentAcc = bank.authenticateUser(usrname, passwd);
+		
+				if (currentAcc == null) {
+				System.out.println("Access denied: Invalid username or password.");
+				} else if (currentAcc.isBlocked()) {
+				System.out.println("Account suspended. Contact Admin.");
+				} else {
+				System.out.println("Access granted.");
+				mainmenu(sc, currentAcc);
+				}
 		}
 
 		public static void mainmenu(Scanner sc, Account userAccount) {
@@ -143,60 +132,55 @@ public class main{
 								}
 						}			
 		}
-		public static void adminMenu(Scanner sc, HashMap<String, Account> usrval) {
-				while(true) {
-						System.out.println("###################");
-						System.out.println("### Admin Panel ###");
-						System.out.println("###################");
-						System.out.println("1. Add Funds to User");
-						System.out.println("2. Block User");
-						System.out.println("3. Unblock User");
-						System.out.println("4. Logout");
-						
-						int choice = sc.nextInt();
-						sc.nextLine(); 
-						
-						if (choice == 4) {
-								System.out.println("Logging out of Admin Panel...");
-								break;
-						}
-						
-						// For options 1, 2, and 3, we always need a target username first
-						System.out.println("Enter target username:");
-						String target = sc.nextLine();
-						
-						if (!usrval.containsKey(target)) {
-								System.out.println("Error: User not found in database.");
-								continue; // Skips the rest of the loop and starts over
-						}
-						
-						// Retrieve the user's Account object
-						Account targetAcc = usrval.get(target);
-						
-						switch(choice) {
-								case 1:
-										System.out.println("Enter amount to deposit for " + target + ":");
-										String depInput = sc.nextLine();
-										BigDecimal amount = new BigDecimal(depInput);
-										
-										if (targetAcc.deposit(amount)) {
-												System.out.println("Funds added successfully. New balance: $" + targetAcc.getBalance());
-										}
-										break;
-										
-								case 2:
-										targetAcc.setBlocked(true);
-										System.out.println("User '" + target + "' has been BLOCKED.");
-										break;
-										
-								case 3:
-										targetAcc.setBlocked(false);
-										System.out.println("User '" + target + "' has been UNBLOCKED.");
-										break;
-										
-								default:
-										System.out.println("Invalid option.");
-						}
-				}
-		}
+		public static void adminMenu(Scanner sc, BankManager bank) {
+        while (true) {
+            System.out.println("###################");
+            System.out.println("### Admin Panel ###");
+            System.out.println("###################");
+            System.out.println("1. Add Funds to User");
+            System.out.println("2. Block User");
+            System.out.println("3. Unblock User");
+            System.out.println("4. Logout");
+            
+            int choice = sc.nextInt();
+            sc.nextLine(); 
+            
+            if (choice == 4) {
+                System.out.println("Logging out of Admin Panel...");
+                break;
+            }
+            
+            System.out.println("Enter target username:");
+            String target = sc.nextLine();
+            
+            Account targetAcc = bank.getAccountForAdmin(target);
+            
+            if (targetAcc == null) {
+                System.out.println("Error: User not found in database.");
+                continue; // Skips the switch statement and loops back to the top
+            }
+            
+            switch (choice) {
+                case 1:
+                    System.out.println("Enter amount to deposit for " + target + ":");
+                    String depInput = sc.nextLine();
+                    BigDecimal amount = new BigDecimal(depInput);
+                    
+                    if (targetAcc.deposit(amount)) {
+                        System.out.println("Funds added successfully. New balance: $" + targetAcc.getBalance());
+                    }
+                    break;
+                case 2:
+                    targetAcc.setBlocked(true);
+                    System.out.println("User '" + target + "' has been BLOCKED.");
+                    break;
+                case 3:
+                    targetAcc.setBlocked(false);
+                    System.out.println("User '" + target + "' has been UNBLOCKED.");
+                    break;
+                default:
+                    System.out.println("Invalid option.");
+            }
+        }
+    }
 	}
