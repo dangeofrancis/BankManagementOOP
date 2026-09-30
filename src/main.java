@@ -9,8 +9,7 @@ public class main{
 				System.out.println("Banking Application");
 				System.out.println("-------------------");
 				System.out.println("what would you like to do?\n 1. create new account\n 2.log into existing account\n 3.Log in as an administrator\n 4.Exit application\n ");
-				int choice = sc.nextInt();
-				sc.nextLine();
+				int choice = getSafeInt(sc);
 
 				if(choice==4){
 						System.out.println("Thankyou.");
@@ -75,63 +74,61 @@ public class main{
 				String usrname = sc.nextLine();
 				System.out.println("Enter your password:");
 				String passwd = sc.nextLine();
-		
+
 				Account currentAcc = bank.authenticateUser(usrname, passwd);
-		
+
 				if (currentAcc == null) {
 				System.out.println("Access denied: Invalid username or password.");
 				} else if (currentAcc.isBlocked()) {
 				System.out.println("Account suspended. Contact Admin.");
 				} else {
 				System.out.println("Access granted.");
-				mainmenu(sc, currentAcc);
+				mainmenu(sc, currentAcc, bank); 
 				}
 		}
 
-		public static void mainmenu(Scanner sc, Account userAccount) {
-						while(true){ 
-								System.out.println("#################");
-								System.out.println("### Main Menu ###");
-								System.out.println("#################");
-								System.out.println("Current Balance: $" + userAccount.getBalance());
-								System.out.println("\nEnter your choice");
-								System.out.println("1.Deposit money to your virtual acc");
-								System.out.println("2.Withdraw money from your virtual acc");
-								System.out.println("3.Exits to start");
-								
-								int choice1 = sc.nextInt();
-								sc.nextLine();
-								
-								if(choice1 == 3){
-										break;
-								}
-								
-								switch(choice1){
-										case 1:
-												System.out.println("Enter amount to deposit:");
-												String depInput = sc.nextLine(); 
-												BigDecimal depositAmount = new BigDecimal(depInput);
-												
-												if (userAccount.deposit(depositAmount)) {
-														System.out.println("Deposit successful.");
-												}
-												break;
-												
-										case 2:
-												System.out.println("Enter amount to withdraw:");
-												String withInput = sc.nextLine();
-												BigDecimal withdrawAmount = new BigDecimal(withInput); 
-												
-												if (userAccount.withdraw(withdrawAmount)) {
-														System.out.println("Withdrawal successful.");
-												}
-												break;
-												
-										default:
-												System.out.println("Invalid option.");
-								}
-						}			
+		public static void mainmenu(Scanner sc, Account userAccount, BankManager bank) {
+				while(true){ 
+				System.out.println("#################");
+				System.out.println("### Main Menu ###");
+				System.out.println("#################");
+				System.out.println("Current Balance: $" + userAccount.getBalance());
+				System.out.println("\nEnter your choice");
+				System.out.println("1. Deposit money");
+				System.out.println("2. Withdraw money");
+				System.out.println("3. Exit to start");
+				
+				int choice1 = getSafeInt(sc);
+				
+				if(choice1 == 3){ break; }
+				
+				switch(choice1){
+						case 1:
+						System.out.println("Enter amount to deposit:");
+						BigDecimal depositAmount = getSafeBigDecimal(sc);
+						
+						if (userAccount.deposit(depositAmount)) {
+								bank.updateAccount(userAccount);
+								System.out.println("Deposit successful.");
+						}
+						break;
+						
+						case 2:
+						System.out.println("Enter amount to withdraw:");
+						BigDecimal withdrawAmount = getSafeBigDecimal(sc); 
+						
+						if (userAccount.withdraw(withdrawAmount)) {
+								bank.updateAccount(userAccount); // <--- SAVES TO DB
+								System.out.println("Withdrawal successful.");
+						}
+						break;
+						
+						default:
+						System.out.println("Invalid option.");
+				}
+				}            
 		}
+
 		public static void adminMenu(Scanner sc, BankManager bank) {
         while (true) {
             System.out.println("###################");
@@ -142,8 +139,7 @@ public class main{
             System.out.println("3. Unblock User");
             System.out.println("4. Logout");
             
-            int choice = sc.nextInt();
-            sc.nextLine(); 
+            int choice = getSafeInt(sc);
             
             if (choice == 4) {
                 System.out.println("Logging out of Admin Panel...");
@@ -157,25 +153,27 @@ public class main{
             
             if (targetAcc == null) {
                 System.out.println("Error: User not found in database.");
-                continue; // Skips the switch statement and loops back to the top
+                continue; 
             }
             
             switch (choice) {
                 case 1:
                     System.out.println("Enter amount to deposit for " + target + ":");
-                    String depInput = sc.nextLine();
-                    BigDecimal amount = new BigDecimal(depInput);
+                    BigDecimal amount = getSafeBigDecimal(sc);
                     
                     if (targetAcc.deposit(amount)) {
+                        bank.updateAccount(targetAcc); 
                         System.out.println("Funds added successfully. New balance: $" + targetAcc.getBalance());
                     }
                     break;
                 case 2:
                     targetAcc.setBlocked(true);
+                    bank.updateAccount(targetAcc); 
                     System.out.println("User '" + target + "' has been BLOCKED.");
                     break;
                 case 3:
                     targetAcc.setBlocked(false);
+                    bank.updateAccount(targetAcc);
                     System.out.println("User '" + target + "' has been UNBLOCKED.");
                     break;
                 default:
@@ -183,4 +181,25 @@ public class main{
             }
         }
     }
-	}
+    public static int getSafeInt(Scanner sc) {
+        while (true) {
+            try {
+                String input = sc.nextLine();
+                return Integer.parseInt(input); 
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a valid number.");
+            }
+        }
+    }
+
+    public static BigDecimal getSafeBigDecimal(Scanner sc) {
+        while (true) {
+            try {
+                String input = sc.nextLine();
+                return new BigDecimal(input); 
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid amount. Please enter a valid number (e.g. 50.00).");
+            }
+        }
+    }
+}
