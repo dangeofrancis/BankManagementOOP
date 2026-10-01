@@ -118,8 +118,14 @@ public class main{
 						BigDecimal withdrawAmount = getSafeBigDecimal(sc); 
 						
 						if (userAccount.withdraw(withdrawAmount)) {
-								bank.updateAccount(userAccount); // <--- SAVES TO DB
+								bank.updateAccount(userAccount); //  SAVES TO DB
 								System.out.println("Withdrawal successful.");
+						}else{
+								if (userAccount.getBalance().compareTo(withdrawAmount) < 0) {
+										System.out.println("Error: Insufficient balance.");
+								} else {
+										System.out.println("Error: Invalid amount (must be greater than zero).");
+								}
 						}
 						break;
 						
