@@ -24,7 +24,7 @@ public class RegisterFrame extends JFrame {
     public RegisterFrame(BankingService bankingService) {
         this.bankingService = bankingService;
 
-        setTitle("fApexCore - Node Registration");
+        setTitle("Soverign Finances - Node Registration");
         setSize(1024, 768);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);

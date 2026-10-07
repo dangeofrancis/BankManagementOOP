@@ -1,5 +1,7 @@
 package database;
 
+import java.util.ArrayList;
+import java.util.List;
 import model.Account;
 
 import java.math.BigDecimal;
@@ -27,11 +29,21 @@ public class BankManager {
                     isBlocked INTEGER
                 );
                 """;
+		String sqlTransactions = """
+                CREATE TABLE IF NOT EXISTS transactions (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT,
+                    type TEXT,
+                    amount TEXT,
+                    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+                );
+                """;
 
         try (Connection conn = DriverManager.getConnection(url);
              Statement stmt = conn.createStatement()) {
 
             stmt.execute(sql);
+			stmt.execute(sqlTransactions);
 
         } catch (SQLException e) {
             System.out.println("Database initialization failed: "
@@ -196,4 +208,94 @@ public class BankManager {
 				return false;
 				}
 		}
-	}
+
+    public void logTransaction(String username, String type, BigDecimal amount) {
+        String sql = "INSERT INTO transactions (username, type, amount) VALUES (?, ?, ?)";
+        
+        try (Connection conn = DriverManager.getConnection(url);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             
+            pstmt.setString(1, username);
+            pstmt.setString(2, type);
+            pstmt.setString(3, amount.toString());
+            pstmt.executeUpdate();
+            
+        } catch (SQLException e) {
+            System.out.println("Failed to log transaction: " + e.getMessage());
+        }
+    }
+// NEW: Fetch all transactions for a specific user to build the graph/table
+    public List<String[]> getTransactionHistory(String username) {
+        List<String[]> history = new ArrayList<>();
+        // Fetch them in chronological order so our graph draws correctly from left to right
+        String sql = "SELECT type, amount, timestamp FROM transactions WHERE username = ? ORDER BY timestamp ASC";
+        
+        try (Connection conn = DriverManager.getConnection(url);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             
+            pstmt.setString(1, username);
+            ResultSet rs = pstmt.executeQuery();
+            
+            while (rs.next()) {
+                String type = rs.getString("type");
+                String amount = rs.getString("amount");
+                String timestamp = rs.getString("timestamp");
+                
+                // Add each row as a string array
+                history.add(new String[]{type, amount, timestamp});
+            }
+            
+        } catch (SQLException e) {
+            System.out.println("Failed to fetch history: " + e.getMessage());
+        }
+        return history;
+    }
+
+
+// NEW: Fetch all transactions globally for the Admin Ledger
+    public List<String[]> getAllTransactions() {
+        List<String[]> history = new ArrayList<>();
+        String sql = "SELECT timestamp, username, type, amount FROM transactions ORDER BY timestamp DESC";
+        
+        try (Connection conn = DriverManager.getConnection(url);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                history.add(new String[]{
+                    rs.getString("timestamp"),
+                    rs.getString("username"),
+                    rs.getString("type"),
+                    rs.getString("amount")
+                });
+            }
+        } catch (SQLException e) {
+            System.out.println("Failed to fetch global history: " + e.getMessage());
+        }
+        return history;
+    }
+
+    // NEW: Fetch user ranking based on transaction activity
+    public List<String[]> getAccountRankings() {
+        List<String[]> rankings = new ArrayList<>();
+        // Joins accounts and transactions to count activity, ordered highest to lowest
+        String sql = "SELECT a.username, COUNT(t.id) as tx_count " +
+                     "FROM accounts a LEFT JOIN transactions t ON a.username = t.username " +
+                     "GROUP BY a.username ORDER BY tx_count DESC";
+                     
+        try (Connection conn = DriverManager.getConnection(url);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                rankings.add(new String[]{
+                    rs.getString("username"),
+                    rs.getString("tx_count")
+                });
+            }
+        } catch (SQLException e) {
+            System.out.println("Failed to fetch rankings: " + e.getMessage());
+        }
+        return rankings;
+    }
+}

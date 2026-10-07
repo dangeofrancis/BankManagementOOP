@@ -25,7 +25,7 @@ public class LoginFrame extends JFrame {
     public LoginFrame(BankingService bankingService) {
         this.bankingService = bankingService;
 
-        setTitle("fApexCore Banking Client");
+        setTitle("Sovrign finances Banking Client");
         setSize(1024, 768); // Larger window to show off the centered card
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -51,10 +51,11 @@ public class LoginFrame extends JFrame {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets = new Insets(8, 0, 8, 0);
 
-        // 1. LOGO
+// --- 1. THE LOGO ---
         try {
             ImageIcon originalIcon = new ImageIcon("assets/logo.png");
-            Image scaledImage = originalIcon.getImage().getScaledInstance(70, 70, Image.SCALE_SMOOTH);
+            // Slightly larger logo for more presence
+            Image scaledImage = originalIcon.getImage().getScaledInstance(85, 85, Image.SCALE_SMOOTH);
             JLabel logoLabel = new JLabel(new ImageIcon(scaledImage));
             logoLabel.setHorizontalAlignment(SwingConstants.CENTER);
             gbc.gridy = 0; gbc.gridwidth = 1;
@@ -63,20 +64,27 @@ public class LoginFrame extends JFrame {
             System.out.println("Logo not found, continuing without it.");
         }
 
-        // 2. TITLE & SUBTITLE
-        JLabel titleLabel = new JLabel("ApexCore Banking");
+        // --- 2. TITLE, SUBTITLE & MOTTO ---
+        JLabel titleLabel = new JLabel("Sovereign Finance");
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 28));
         titleLabel.setForeground(Color.WHITE);
         titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
         gbc.gridy = 1; gbc.insets = new Insets(10, 0, 2, 0);
         cardPanel.add(titleLabel, gbc);
 
-        JLabel subtitleLabel = new JLabel("● WORKSTATION CLIENT EDITION");
+        JLabel subtitleLabel = new JLabel("● WEALTH MANAGEMENT TERMINAL");
         subtitleLabel.setFont(new Font("Monospaced", Font.BOLD, 10));
         subtitleLabel.setForeground(COLOR_ACCENT_TEAL);
         subtitleLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        gbc.gridy = 2; gbc.insets = new Insets(0, 0, 30, 0);
+        gbc.gridy = 2; gbc.insets = new Insets(0, 0, 5, 0); 
         cardPanel.add(subtitleLabel, gbc);
+
+        JLabel mottoLabel = new JLabel("\"Command Your Assets.\"");
+        mottoLabel.setFont(new Font("Segoe UI", Font.ITALIC, 12));
+        mottoLabel.setForeground(COLOR_TEXT_MUTED);
+        mottoLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        gbc.gridy = 3; gbc.insets = new Insets(0, 0, 25, 0); 
+        cardPanel.add(mottoLabel, gbc);
 
         // 3. INPUT FIELDS
         gbc.insets = new Insets(5, 0, 2, 0);
@@ -166,12 +174,14 @@ public class LoginFrame extends JFrame {
         JPanel statusBar = new JPanel(new BorderLayout());
         statusBar.setBackground(COLOR_BG_APP);
         statusBar.setBorder(new EmptyBorder(5, 10, 5, 10));
-        JLabel statusLeft = new JLabel("● Connected to Secure Core   ·   Node: 127.0.0.1   ·   Port: 8443 (mTLS)");
+        JLabel statusLeft = new JLabel("● Connected to Secure Core   ·   Node: ###.#.#.#   ·   Port: #### (mTLS)");
         statusLeft.setFont(new Font("Monospaced", Font.PLAIN, 11));
         statusLeft.setForeground(COLOR_TEXT_MUTED);
-        JLabel statusRight = new JLabel("TLS 1.3 FIPS 140-3");
-        statusRight.setFont(new Font("Monospaced", Font.PLAIN, 11));
+        
+        JLabel statusRight = new JLabel("Powered by Sovergn Financial Systems © 2026");
+        statusRight.setFont(new Font("Segoe UI", Font.BOLD, 11));
         statusRight.setForeground(COLOR_TEXT_MUTED);
+        
         statusBar.add(statusLeft, BorderLayout.WEST);
         statusBar.add(statusRight, BorderLayout.EAST);
         add(statusBar, BorderLayout.SOUTH);

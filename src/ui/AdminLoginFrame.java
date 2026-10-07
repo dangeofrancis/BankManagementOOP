@@ -24,7 +24,7 @@ public class AdminLoginFrame extends JFrame {
     public AdminLoginFrame(BankingService bankingService) {
         this.bankingService = bankingService;
 
-        setTitle("fApexCore - Admin Terminal");
+        setTitle("Soverign Finances - Admin Terminal");
         setSize(1024, 768);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
