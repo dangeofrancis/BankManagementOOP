@@ -158,6 +158,7 @@ public class LoginFrame extends JFrame {
                     new RegisterFrame(bankingService);
 
             registerFrame.setVisible(true);
+		dispose();
         });
 
         adminButton.addActionListener(e -> {
@@ -166,6 +167,7 @@ public class LoginFrame extends JFrame {
                     new AdminLoginFrame(bankingService);
 
             adminLoginFrame.setVisible(true);
+		dispose();
         });
 
         exitButton.addActionListener(

@@ -120,9 +120,10 @@ public class AdminLoginFrame extends JFrame {
                 e -> login()
         );
 
-        backButton.addActionListener(
-                e -> dispose()
-        );
+        backButton.addActionListener(e -> {
+            dispose();
+            new LoginFrame(bankingService).setVisible(true); // NEW: Re-opens login
+        });
     }
 
     private void login() {

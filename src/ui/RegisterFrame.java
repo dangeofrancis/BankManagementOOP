@@ -112,8 +112,10 @@ public class RegisterFrame extends JFrame {
         createButton.addActionListener(e -> createAccount());
 
         // Back action
-        backButton.addActionListener(e -> dispose());
-    }
+        backButton.addActionListener(e -> {
+            dispose();
+            new LoginFrame(bankingService).setVisible(true); 
+        });    }
 
     private void createAccount() {
 
@@ -184,7 +186,7 @@ public class RegisterFrame extends JFrame {
             );
 
             dispose();
-
+		new LoginFrame(bankingService).setVisible(true);
         } else {
 
             JOptionPane.showMessageDialog(

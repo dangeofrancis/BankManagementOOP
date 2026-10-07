@@ -87,6 +87,8 @@ public class UserDashboard extends JFrame {
         JButton withdrawButton =
                 new JButton("Withdraw Money");
 
+		JButton transferButton = new JButton("Transfer Money");
+
         JButton logoutButton =
                 new JButton("Logout");
 
@@ -122,15 +124,20 @@ public class UserDashboard extends JFrame {
 
         panel.add(withdrawButton, gbc);
 
+		gbc.gridx = 0;
+        gbc.gridy = 4;
+        gbc.gridwidth = 2;
+        panel.add(transferButton, gbc);
+
         // Logout button
         gbc.gridx = 0;
-        gbc.gridy = 4;
+        gbc.gridy = 5;
         gbc.gridwidth = 2;
 
         panel.add(logoutButton, gbc);
 
         // Exit button
-        gbc.gridy = 5;
+        gbc.gridy = 6;
 
         panel.add(exitButton, gbc);
 
@@ -144,6 +151,8 @@ public class UserDashboard extends JFrame {
         withdrawButton.addActionListener(
                 e -> withdrawMoney()
         );
+
+		transferButton.addActionListener(e -> transferMoney());
 
         logoutButton.addActionListener(
                 e -> logout()
@@ -297,4 +306,47 @@ public class UserDashboard extends JFrame {
             System.exit(0);
         }
     }
+		private void transferMoney() {
+				String targetUser = JOptionPane.showInputDialog(this, "Enter recipient's username:");
+				
+				if (targetUser == null || targetUser.trim().isEmpty()) {
+				return;
+				}
+		
+				String input = JOptionPane.showInputDialog(this, "Enter amount to transfer to " + targetUser + ":");
+				
+				if (input == null) {
+				return;
+				}
+		
+				try {
+				BigDecimal amount = new BigDecimal(input);
+				boolean success = bankingService.transfer(account, targetUser.trim(), amount);
+		
+				if (success) {
+						updateBalance(); 
+						JOptionPane.showMessageDialog(
+								this,
+								"Successfully transferred ₹" + amount + " to '" + targetUser + "'.",
+								"Transfer Complete",
+								JOptionPane.INFORMATION_MESSAGE
+						);
+				} else {
+						JOptionPane.showMessageDialog(
+								this,
+								"Transfer failed. Please check if the user exists, and ensure you have sufficient funds.",
+								"Transfer Error",
+								JOptionPane.ERROR_MESSAGE
+						);
+				}
+		
+				} catch (NumberFormatException e) {
+				JOptionPane.showMessageDialog(
+						this,
+						"Please enter a valid numeric amount.",
+						"Invalid Amount",
+						JOptionPane.ERROR_MESSAGE
+				);
+				}
+		}
 }

@@ -120,4 +120,46 @@ public class BankingService {
 
         return true;
     }
+		// Delete user account
+		public boolean deleteUser(String username) {
+				
+				if (username == null || username.trim().isEmpty()) {
+				return false;
+				}
+		
+				return bankManager.deleteUser(username);
+		}
+		// Transfer money between accounts
+		public boolean transfer(Account sender, String receiverUsername, BigDecimal amount) {
+				
+				if (sender == null || receiverUsername == null || receiverUsername.trim().isEmpty()) {
+				return false;
+				}
+		
+				if (sender.getUsername().equals(receiverUsername)) {
+				return false;
+				}
+		
+				Account receiver = bankManager.getAccountForAdmin(receiverUsername);
+				if (receiver == null) {
+				return false; // Receiver does not exist
+				}
+		
+				if (sender.withdraw(amount)) {
+				
+				if (receiver.deposit(amount)) {
+						
+						bankManager.updateAccount(sender);
+						bankManager.updateAccount(receiver);
+						return true;
+						
+				} else {
+						sender.deposit(amount);
+						return false;
+				}
+		}
+				
+				// Returns false if the sender had insufficient funds or entered a negative amount
+				return false; 
+		}
 }

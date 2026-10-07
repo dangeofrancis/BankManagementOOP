@@ -56,6 +56,8 @@ public class AdminDashboard extends JFrame {
         JButton unblockButton =
                 new JButton("Unblock User");
 
+		JButton removeUserButton = new JButton("Remove User");
+
         JButton logoutButton =
                 new JButton("Logout");
 
@@ -88,9 +90,16 @@ public class AdminDashboard extends JFrame {
 
         panel.add(unblockButton, gbc);
 
-        gbc.gridy = 4;
+		gbc.gridy = 4;
+        panel.add(removeUserButton, gbc);
+
+        gbc.gridy = 5;
 
         panel.add(logoutButton, gbc);
+
+        gbc.gridy = 6;
+
+        panel.add(exitButton, gbc);
 
         add(panel);
 
@@ -105,6 +114,8 @@ public class AdminDashboard extends JFrame {
         unblockButton.addActionListener(
                 e -> unblockUser()
         );
+
+		removeUserButton.addActionListener(e -> removeUser());
 
         logoutButton.addActionListener(
                 e -> logout()
@@ -293,4 +304,41 @@ public class AdminDashboard extends JFrame {
 
         loginFrame.setVisible(true);
     }
+
+		private void removeUser() {
+				String username = JOptionPane.showInputDialog(this, "Enter username to permanently delete:");
+				
+				if (username == null || username.trim().isEmpty()) {
+				return;
+				}
+		
+				// Add a safety confirmation pop-up
+				int choice = JOptionPane.showConfirmDialog(
+						this,
+						"WARNING: Are you sure you want to delete user '" + username + "'? This cannot be undone.",
+						"Confirm Deletion",
+						JOptionPane.YES_NO_OPTION,
+						JOptionPane.WARNING_MESSAGE
+				);
+		
+				if (choice == JOptionPane.YES_OPTION) {
+				boolean success = bankingService.deleteUser(username.trim());
+		
+				if (success) {
+						JOptionPane.showMessageDialog(
+								this,
+								"User '" + username + "' has been successfully deleted.",
+								"Success",
+								JOptionPane.INFORMATION_MESSAGE
+						);
+				} else {
+						JOptionPane.showMessageDialog(
+								this,
+								"Deletion failed. User not found.",
+								"Error",
+								JOptionPane.ERROR_MESSAGE
+						);
+				}
+			}
+	}
 }

@@ -177,4 +177,23 @@ public class BankManager {
                     + e.getMessage());
         }
     }
-}
+		// Delete user account
+		public boolean deleteUser(String username) {
+				String sql = "DELETE FROM accounts WHERE username = ?";
+		
+				try (Connection conn = DriverManager.getConnection(url);
+				PreparedStatement pstmt = conn.prepareStatement(sql)) {
+		
+				pstmt.setString(1, username);
+				
+				// executeUpdate returns the number of rows changed. 
+				// If it returns > 0, the user was successfully deleted.
+				int rowsAffected = pstmt.executeUpdate();
+				return rowsAffected > 0;
+		
+				} catch (SQLException e) {
+				System.out.println("Deletion error: " + e.getMessage());
+				return false;
+				}
+		}
+	}
